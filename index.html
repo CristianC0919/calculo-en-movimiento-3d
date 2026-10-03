@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cálculo en Movimiento 3D</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">∂</div>
+      <div>
+        <div class="eyebrow">PROYECTO DE AULA · CÁLCULO DIFERENCIAL</div>
+        <h1>CÁLCULO <span>EN MOVIMIENTO</span></h1>
+      </div>
+    </div>
+    <div class="top-status"><span id="cameraStatus" class="dot off"></span><span id="statusText">Cámara desactivada</span></div>
+  </header>
+
+  <main class="workspace">
+    <section class="function-strip panel">
+      <div class="strip-heading">
+        <div>
+          <span class="kicker">FUNCIÓN</span>
+          <h2>Define la función que quieras analizar</h2>
+        </div>
+        <div class="quick-note">Ejemplos: x^3-3*x · sin(x) · exp(x) · ln(x+2)</div>
+      </div>
+      <div class="function-row">
+        <div class="formula-prefix">f(x) =</div>
+        <input id="functionInput" value="x^2" aria-label="Función matemática">
+        <button id="applyBtn" class="btn btn-red">CALCULAR</button>
+        <button id="resetBtn" class="btn btn-dark">↻ REINICIAR</button>
+      </div>
+      <div class="examples">
+        <button data-fn="x^2">x²</button>
+        <button data-fn="x^3-2*x">x³−2x</button>
+        <button data-fn="sin(x)">sen(x)</button>
+        <button data-fn="exp(x/2)">eˣᐟ²</button>
+      </div>
+      <div class="range-line"><label>RANGO DE GRÁFICA <span id="rangeValue">−5 a 5</span></label><input id="rangeInput" type="range" min="2" max="10" step="1" value="5"></div>
+      <div id="functionError" class="error"></div>
+    </section>
+
+    <section class="main-grid">
+      <aside class="left-column">
+        <section class="panel camera-panel">
+          <div class="panel-head"><h2>CÁMARA</h2><span class="mini-status">MANOS</span></div>
+          <div class="camera-frame">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="handCanvas"></canvas>
+            <div class="camera-empty">
+              <div class="camera-icon">◉</div>
+              <strong>Activa la cámara</strong>
+              <span>La mano controla las interacciones 1–5</span>
+            </div>
+          </div>
+          <div class="camera-actions">
+            <button id="cameraBtn" class="btn btn-red full">📷 ACTIVAR CÁMARA</button>
+          </div>
+          <div class="camera-meta"><span id="fingerState">Sin mano</span><span id="pointsState">0 puntos</span></div>
+        </section>
+
+        <section class="panel gesture-panel">
+          <div class="panel-head"><h2>GESTOS</h2><span class="mini-status">1–5</span></div>
+          <div class="gesture-list">
+            <div class="gesture"><b>☝ 1</b><span>Mover x = a y evaluar f(a)</span></div>
+            <div class="gesture"><b>✌ 2</b><span>Construir la recta tangente</span></div>
+            <div class="gesture"><b>🤟 3</b><span>Mostrar f, f' y f''</span></div>
+            <div class="gesture"><b>🖖 4</b><span>Buscar máximos, mínimos y críticos</span></div>
+            <div class="gesture"><b>🖐 5</b><span>Activar el reto de razón de cambio</span></div>
+          </div>
+        </section>
+
+        <section class="panel fallback">
+          <span class="kicker">CONTROL ALTERNATIVO</span>
+          <p><b>1–5</b> selecciona el gesto · <b>← →</b> mueve x · <b>R</b> reinicia.</p>
+        </section>
+      </aside>
+
+      <section class="graph-panel panel">
+        <div class="graph-head">
+          <div>
+            <span class="kicker">VISUALIZACIÓN 3D</span>
+            <h2 id="gestureTitle">Sin interacción</h2>
+            <p id="gestureAction">Escribe una función y activa la cámara o usa 1–5.</p>
+          </div>
+          <div class="graph-equation">
+            <strong id="functionText">f(x) = x²</strong>
+            <span id="derivativesText">f'(x) = 2x · f''(x) = 2</span>
+          </div>
+        </div>
+        <div class="scene-wrap">
+          <canvas id="scene"></canvas>
+          <div class="live-badge"><span class="live-dot"></span> INTERACCIÓN EN VIVO</div>
+          <div class="legend">
+            <div><i class="line f"></i> f(x)</div>
+            <div><i class="line d1"></i> f'(x)</div>
+            <div><i class="line d2"></i> f''(x)</div>
+            <div><i class="point"></i> punto</div>
+          </div>
+          <div class="result-chip"><span>RESULTADO</span><strong id="mathResult">Esperando una interacción…</strong></div>
+          <div id="challenge" class="challenge hidden"><b>RETO DE RAZÓN DE CAMBIO</b><p id="challengeText">Se calculará usando la función ingresada.</p><div id="challengeAnswer"></div></div>
+        </div>
+      </section>
+
+      <aside class="right-column">
+        <section class="panel results-panel">
+          <div class="panel-head"><h2>RESULTADOS</h2><span class="mini-status red">LIVE</span></div>
+          <div class="metric hero-metric"><span>FUNCIÓN</span><strong id="resultFunction">f(x) = x²</strong></div>
+          <div class="metric"><span>DERIVADA f'(x)</span><strong id="resultDerivative">f'(x) = 2x</strong></div>
+          <div class="metric"><span>SEGUNDA DERIVADA f''(x)</span><strong id="resultSecond">f''(x) = 2</strong></div>
+          <div class="metric split"><span>PUNTO ACTUAL</span><strong id="resultPoint">a = 1.500</strong></div>
+          <div class="metric split"><span>f(a)</span><strong id="resultF">1.500²</strong></div>
+          <div class="metric split"><span>f'(a)</span><strong id="resultDf">3.000</strong></div>
+        </section>
+        <section class="panel mode-panel">
+          <span class="kicker">MODO ACTIVO</span>
+          <div class="mode-title" id="modeTitle">SIN INTERACCIÓN</div>
+          <p id="modeDescription">Activa la cámara o usa el teclado para comenzar.</p>
+        </section>
+        <section class="panel notes-panel">
+          <span class="kicker">PROPÓSITO</span>
+          <p>Visualiza cómo cambian una función, sus derivadas y la razón de cambio mediante gestos.</p>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer"><span>CÁLCULO EN MOVIMIENTO · ENTREGA 3</span><span>Three.js · Math.js · MediaPipe</span></footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjs@13.0.1/lib/browser/math.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
